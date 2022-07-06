@@ -2,7 +2,7 @@
 
 `locales/ko.js`에 있는 단어를 바로 불러올 수 있는 확장프로그램입니다.
 
-![example](https://i.ibb.co/7kjxkjB/ezgif-3-1828582386.gif)
+![example](https://i.ibb.co/njkKRFP/ezgif-3-57443f3178.gif)
 
 ## How to Install
 
