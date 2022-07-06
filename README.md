@@ -2,6 +2,8 @@
 
 `locales/ko.js`에 있는 단어를 바로 불러올 수 있는 확장프로그램입니다.
 
+[확장프로그램 다운로드](https://github.com/gJhlee/gt-vscode-locale-finder/releases/tag/0.0.1)
+
 ![example](https://i.ibb.co/njkKRFP/ezgif-3-57443f3178.gif)
 
 ## How to Install
