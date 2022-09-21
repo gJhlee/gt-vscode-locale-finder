@@ -6,7 +6,10 @@ import { join } from 'path';
 import * as levenshtein from 'fastest-levenshtein';
 import { ConsoleReporter } from '@vscode/test-electron';
 import { loadavg } from 'os';
-const safeEval = require('safe-eval');
+
+const stringSimilarity = require("string-similarity");
+const _eval = require("eval");
+// const safeEval = require('safe-eval');
 
 
 
@@ -21,18 +24,22 @@ export function activate(context: vscode.ExtensionContext) {
 
 			if (editor) {
 				const document = editor.document;
-				const selection = editor.selection;
+				let selection = editor.selection;
+				let extendSelection = new vscode.Selection(selection.start.line, Math.max(selection.start.character-1, 0), selection.end.line, selection.end.character+1);
 				const quickPick = vscode.window.createQuickPick();
 
 				const word = document.getText(selection);
+				const extendSelectedWord = document.getText(extendSelection);
+				if(extendSelectedWord.startsWith(`"`) && extendSelectedWord.endsWith(`"`)) {
+					selection = extendSelection;
+				}
 				const i18nWords: I18nItem = provider.find(word);
 				const items: vscode.QuickPickItem[] = [];
 				if (i18nWords.keys.length < 1) {
 					let similars: I18nItem[] = provider.similarWords(word) || [];
-					similars.sort((a, b) => a.dist - b.dist);
 					similars.forEach((item) =>{
 						item.keys.forEach((key: any) => {
-							items.push({ label: item.word, description:key });
+							items.push({ label: ` ${item.word}`, description:`Similarity: ${item.dist.toFixed(2)}`, detail: key });
 						});
 					});
 					if (similars.length === 0) {
@@ -40,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 				} else {
 					i18nWords.keys.forEach((key: any) => {
-						items.push({ label: i18nWords.word, description: key });
+						items.push({ label: i18nWords.word, description: "Exactly match", detail: key });
 					});
 				}
 
@@ -48,7 +55,9 @@ export function activate(context: vscode.ExtensionContext) {
 				quickPick.onDidChangeSelection(pickecItem => {
 					if (pickecItem[0]) {
 						editor.edit(editBuilder => {
-							editBuilder.replace(selection, `$.t("${pickecItem[0].description}")`||word);
+							let item:I18nItem = provider.find(pickecItem[0].label);
+							console.log(pickecItem[0])
+							editBuilder.replace(selection, `$.t("${pickecItem[0].detail}")`||word);
 						});
 						quickPick.dispose();
 					}
@@ -72,6 +81,7 @@ class GTLocaleProvider implements vscode.InlineValuesProvider {
 	onDidChangeInlineValues?: vscode.Event<void> | undefined;
 	public dictionary: Map<string, string[]> = new Map();
 	public words: string[] = [];
+	public i18nVariableNames: string[] = ["i18nEnglish", "i18nKorean", "i18nJapanese", "i18nChinese"];
 	provideInlineValues(document: vscode.TextDocument, viewPort: vscode.Range, context: vscode.InlineValueContext, token: vscode.CancellationToken): vscode.ProviderResult<vscode.InlineValue[]> {
 		return;
 	}
@@ -122,15 +132,20 @@ class GTLocaleProvider implements vscode.InlineValuesProvider {
 	}
 
 	public similarWords(word: string): I18nItem[] | undefined {
-		const recommands : I18nItem[]= [] ;
+		let recommands:I18nItem[] = [];
+		const wLen = word.length;
 		this.words?.forEach(w => {
 			const dist = levenshtein.distance(w, word);
-			if (dist < 10) {
+			const sim = stringSimilarity.compareTwoStrings(w, word);
+			let score = sim + 0.5*dist/Math.max(w.length, wLen);
+			if (score > 0.7) {
 				let item = this.find(w);
-				item.dist = dist;
+				item.dist = score;
 				recommands.push(item);
 			}
 		});
+		recommands.sort((a, b) => b.dist - a.dist);
+
 		return recommands;
 	}
 
@@ -173,8 +188,8 @@ class GTLocaleProvider implements vscode.InlineValuesProvider {
 		const dictionary = new Map<string, string[]>();
 		if (localePath) {
 			const source = readFileSync(localePath).toString();
-
-			let i18nKorean = safeEval(`(()=>{${source};return i18nKorean})()`);
+			let i18nKorean = _eval(source+`exports.lang = i18nKorean; // || i18nEnglish || i18nJapanese || i18nChinese`, true).lang;
+			// let i18nKorean = safeEval(`(()=>{${source};return i18nKorean})()`);
 			//flatten
 			function aux(obj: any, key: string[], categoty: string) {
 				if (typeof obj === 'object') {
