@@ -16,7 +16,9 @@ export class I18nCodeActionProvider implements vscode.CodeActionProvider {
         let similars = this.localeProvider.similarKeys(text, 5);
         similars?.forEach((similar) => {
           const fixAction = new vscode.CodeAction(
-            `replace with ${similar.keys[0]} ("${similar.word}")`,
+            `replace with ${similar.keys[0]} (${similar.word
+              .map((x) => `"${x}"`)
+              .join(", ")})`,
             vscode.CodeActionKind.QuickFix,
           );
           fixAction.edit = new vscode.WorkspaceEdit();

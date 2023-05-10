@@ -85,7 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
         } else {
           i18nWords.keys.forEach((key: any) => {
             items.push({
-              label: i18nWords.word,
+              label: i18nWords.word[0],
               description: "Exactly match",
               detail: key,
             });
@@ -111,9 +111,11 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   );
 
-  context.subscriptions.push(
-    vscode.languages.registerCodeActionsProvider("javascript", i18nProvider),
-  );
+  ["javascript", "html"].forEach((extension) => {
+    context.subscriptions.push(
+      vscode.languages.registerCodeActionsProvider(extension, i18nProvider),
+    );
+  });
   vscode.workspace.onDidSaveTextDocument((document) => {
     const text = document.getText();
     const regExp = /([a-z0-9A-Z_-]+:([a-z0-9A-Z_-]+\.?)+)/g;
@@ -156,7 +158,7 @@ export function activate(context: vscode.ExtensionContext) {
           });
         } else {
           items.push({
-            label: `${content} -> ${item.word}`,
+            label: `${content} -> ${item.word.join(", ")}`,
           });
         }
 

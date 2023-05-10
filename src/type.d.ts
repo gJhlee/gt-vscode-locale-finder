@@ -1,5 +1,5 @@
 export interface I18nItem {
-  word: string;
+  word: string[];
   keys: string[];
   dist: number;
 }

@@ -10,7 +10,7 @@ const _eval = require("eval");
 export class GTLocaleProvider implements vscode.InlineValuesProvider {
   onDidChangeInlineValues?: vscode.Event<void> | undefined;
   public dictionary: Map<string, string[]> = new Map();
-  public idDcittionary: Map<string, string> = new Map();
+  public idDcittionary: Map<string, string[]> = new Map();
   public words: string[] = [];
   public i18nVariableNames: string[] = [
     "i18nEnglish",
@@ -37,7 +37,7 @@ export class GTLocaleProvider implements vscode.InlineValuesProvider {
   public find(word: string): I18nItem {
     let keys = this.dictionary.get(word) || [];
     return {
-      word,
+      word: [word],
       keys: keys,
       dist: keys.length ?? 0,
     };
@@ -102,7 +102,6 @@ export class GTLocaleProvider implements vscode.InlineValuesProvider {
   }
 
   public findNearestId(id: string): string | undefined {
-    console.log(id, this.keys.length);
     return levenshtein.closest(id, this.keys);
   }
 
@@ -111,13 +110,13 @@ export class GTLocaleProvider implements vscode.InlineValuesProvider {
     key: string[],
     categoty: string,
     wordToIdMap?: Map<string, string[]>,
-    idToWordMap?: Map<string, string>,
+    idToWordMap?: Map<string, string[]>,
   ) {
     if (wordToIdMap === undefined) {
       wordToIdMap = new Map<string, string[]>();
     }
     if (idToWordMap === undefined) {
-      idToWordMap = new Map<string, string>();
+      idToWordMap = new Map<string, string[]>();
     }
     if (typeof obj === "object") {
       for (let k in obj) {
@@ -135,14 +134,20 @@ export class GTLocaleProvider implements vscode.InlineValuesProvider {
       }
       let uniqKey = `${categoty}:${key.join(".")}`;
       wordToIdMap.get(obj)?.push(uniqKey);
-      idToWordMap.set(uniqKey, obj);
+
+      if (!idToWordMap.has(uniqKey)) {
+        idToWordMap.set(uniqKey, []);
+      }
+      if (!idToWordMap.get(uniqKey)?.includes(obj)) {
+        idToWordMap.get(uniqKey)?.push(obj);
+      }
     }
     return { wordToIdMap, idToWordMap };
   }
 
   public parseFile(path: string) {
-    const wordToIdMap = new Map<string, string[]>();
-    const idToWordMap = new Map<string, string>();
+    const wordToIdMap = this.dictionary || new Map<string, string[]>();
+    const idToWordMap = this.idDcittionary || new Map<string, string[]>();
 
     let source = readFileSync(path).toString();
     source =
