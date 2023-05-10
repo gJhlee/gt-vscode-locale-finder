@@ -2,7 +2,7 @@
   "name": "gtone-tools",
   "displayName": "GTOne-tools",
   "description": "",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": "https://github.com/gJhlee/gt-vscode-locale-finder",
   "engines": {
     "vscode": "^1.68.0"
@@ -11,7 +11,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:gtone.i18n"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -20,6 +20,11 @@
         "command": "gtone.i18n",
         "category": "GTOne Tools",
         "title": "i18n"
+      },
+      {
+        "command": "gtone.i18n.findbyid",
+        "category": "GTOne Tools",
+        "title": "Find i18n labels."
       }
     ]
   },
