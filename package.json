@@ -2,7 +2,7 @@
   "name": "gtone-tools",
   "displayName": "GTOne-tools",
   "description": "",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "repository": "https://github.com/gJhlee/gt-vscode-locale-finder",
   "engines": {
     "vscode": "^1.68.0"
@@ -29,6 +29,7 @@
     ]
   },
   "scripts": {
+    "vscode:build": "vsce package",
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",

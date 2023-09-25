@@ -143,22 +143,30 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("gtone.i18n.findbyid", async () => {
+      const regex = /(.+\$\.t\()?"?(?<key>[^"\s]+:[^"\s]+)(\".+)?/gm;
       const editor = vscode.window.activeTextEditor;
+      const items: vscode.QuickPickItem[] = [];
+
       if (editor) {
         const document = editor.document;
-        const content = document
-          .getText(editor.selection)
-          .replace(/^"|"$/g, "");
-        const items: vscode.QuickPickItem[] = [];
-        const item = localeProvider.findById(content);
-        if (item === undefined) {
-          items.push({
-            label: `${content}를 찾을 수 없습니다.`,
-            description: `전체 단어 개수: ${localeProvider.dictionary.size}`,
-          });
+        let content: string | undefined = document.getText(editor.selection);
+        content = regex.exec(content)?.groups?.key;
+
+        if (content) {
+          const item = localeProvider.findById(content);
+          if (item === undefined) {
+            items.push({
+              label: `${content}를 찾을 수 없습니다.`,
+              description: `전체 단어 개수: ${localeProvider.dictionary.size}`,
+            });
+          } else {
+            items.push({
+              label: `${content} -> ${item.word.join(", ")}`,
+            });
+          }
         } else {
           items.push({
-            label: `${content} -> ${item.word.join(", ")}`,
+            label: `Label id를 찾을 수 없습니다.`
           });
         }
 

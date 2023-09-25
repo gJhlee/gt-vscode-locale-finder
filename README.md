@@ -1,3 +1,4 @@
+
 ## Features
 
 `locales/ko.js`에 있는 단어를 바로 불러올 수 있는 확장프로그램입니다.
@@ -29,6 +30,17 @@ VSCode 확장(`Ctrl+Shift+X`) 탭 우상단 [...] 버튼을 클릭하고, `VSIX�
 
 ![example](https://i.ibb.co/0jZw9PP/2023-05-10-105013.png);
 
+
+## 프로젝트 빌드
+
+```
+vsce package
+```
+
+## ChangeLog
+
+### 0.0.4
+Label 검색 시 정규표현식을 확장해서 선택한 영역의 label을 알아서 찾습니다.
 
 ## 만든사람
 
